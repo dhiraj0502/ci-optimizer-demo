@@ -1,1 +1,4 @@
-"timestamp,job_name,predicted_risk,predicted_time,decision" 
+"timestamp,job_name,predicted_risk,predicted_time,decision ",,,,
+2025-07-29T11:57:17.832141,heavy-job,0,13.28,TRUE
+2025-07-29T12:04:16.598852;heavy-job;0;13.28;true,,,,
+2025-07-29T12:05:20.260654+00:00,heavy-job,0,13.28,TRUE
