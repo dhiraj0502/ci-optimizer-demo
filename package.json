@@ -2,11 +2,10 @@
   "name": "ci-optimizer-demo",
   "version": "1.0.0",
   "main": "index.js",
-"scripts": {
-  "start": "node app.js",
-  "test": "npx jest"
-},
-  
+  "scripts": {
+    "start": "node app.js",
+    "test": "npx jest"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
