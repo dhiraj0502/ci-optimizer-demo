@@ -18,8 +18,8 @@ runs:
 
     - name: Install dependencies
       run: pip install scikit-learn joblib
+      shell: bash
 
     - name: Run decision engine
       run: python smart-ci-action/run.py ${{ inputs.job }}
       shell: bash
- 
