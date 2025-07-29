@@ -8,43 +8,39 @@ import joblib
 # Load the dataset
 df = pd.read_csv("ci_data.csv")
 
-# Drop missing durations (these are likely failed or incomplete jobs)
+# Drop missing durations
 df = df.dropna(subset=["duration_seconds"])
 
-# Convert categorical features
-df["job_name"] = df["job_name"].astype("category").cat.codes
+# Convert job_name to categories and save original names
+df["job_name"] = df["job_name"].astype("category")
+job_categories = df["job_name"].cat.categories.tolist()  # Save original names
+df["job_name"] = df["job_name"].cat.codes  # Encode as numbers
+
+# Binary risk target
 df["status_bin"] = df["status"].apply(lambda x: 1 if x != "success" else 0)
 
-# Features to use
-features = ["job_name"]
-target_risk = "status_bin"
-target_time = "duration_seconds"
-
-# Split dataset
-X = df[features]
-y_risk = df[target_risk]
-y_time = df[target_time]
+# Split features and targets
+X = df[["job_name"]]
+y_risk = df["status_bin"]
+y_time = df["duration_seconds"]
 
 X_train, X_test, y_risk_train, y_risk_test = train_test_split(X, y_risk, test_size=0.2, random_state=42)
 _, _, y_time_train, y_time_test = train_test_split(X, y_time, test_size=0.2, random_state=42)
 
-# === Train Risk Classifier ===
+# === Train Models ===
 risk_model = RandomForestClassifier()
 risk_model.fit(X_train, y_risk_train)
-risk_preds = risk_model.predict(X_test)
-risk_acc = accuracy_score(y_risk_test, risk_preds)
-print(f"✅ Risk model accuracy: {risk_acc:.2f}")
+risk_acc = accuracy_score(y_risk_test, risk_model.predict(X_test))
+print(f"Risk model accuracy: {risk_acc:.2f}")
 
-# === Train Time Predictor ===
 time_model = RandomForestRegressor()
 time_model.fit(X_train, y_time_train)
-time_preds = time_model.predict(X_test)
-time_mae = mean_absolute_error(y_time_test, time_preds)
-print(f"⏱️ Duration model MAE: {time_mae:.2f} seconds")
+time_mae = mean_absolute_error(y_time_test, time_model.predict(X_test))
+print(f"Duration model MAE: {time_mae:.2f} seconds")
 
-# === Save models ===
+# Save all artifacts
 joblib.dump(risk_model, "risk_model.pkl")
 joblib.dump(time_model, "duration_model.pkl")
-joblib.dump(df["job_name"].astype("category").cat.categories.tolist(), "job_categories.pkl")
+joblib.dump(job_categories, "job_categories.pkl")  # Fixed line
 
-print("✅ Models saved: risk_model.pkl, duration_model.pkl")
+print("Models saved: risk_model.pkl, duration_model.pkl, job_categories.pkl")
