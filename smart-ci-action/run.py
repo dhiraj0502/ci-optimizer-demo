@@ -2,7 +2,7 @@ import os
 import sys
 import joblib
 import csv
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 
 # Load models
 risk_model = joblib.load("risk_model.pkl")
@@ -30,7 +30,7 @@ pred_time = time_model.predict(X)[0]
 skip = pred_risk == 0 and pred_time > 8
 decision = "true" if skip else "false"
 
-# Output to GitHub Actions
+# Output to GitHub Actions (note: still using deprecated method for now)
 print(f"::set-output name=skip::{decision}")
 print(f"Predicted risk: {pred_risk}, Predicted time: {pred_time:.2f} sec, Skip: {decision}")
 
@@ -43,7 +43,7 @@ with open(log_file, mode="a", encoding="utf-8", newline="") as f:
     if not log_exists:
         writer.writerow(["timestamp", "job_name", "predicted_risk", "predicted_time", "decision"])
     writer.writerow([
-        datetime.now(UTC).isoformat(),
+        datetime.now(timezone.utc).isoformat(),
         job_name,
         pred_risk,
         round(pred_time, 2),
