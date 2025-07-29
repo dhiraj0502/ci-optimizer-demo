@@ -22,7 +22,7 @@ jobs:
           job: "heavy-job"
 
       - name: Upload decision log
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: decision-log
           path: decision_log.csv
