@@ -30,7 +30,7 @@ pred_time = time_model.predict(X)[0]
 skip = pred_risk == 0 and pred_time > 8
 decision = "true" if skip else "false"
 
-# Output to GitHub Actions (note: still using deprecated method for now)
+# Output to GitHub Actions
 print(f"::set-output name=skip::{decision}")
 print(f"Predicted risk: {pred_risk}, Predicted time: {pred_time:.2f} sec, Skip: {decision}")
 
