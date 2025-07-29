@@ -2,7 +2,7 @@ import os
 import sys
 import joblib
 import csv
-from datetime import datetime
+from datetime import datetime, UTC
 
 # Load models
 risk_model = joblib.load("risk_model.pkl")
@@ -38,13 +38,12 @@ print(f"Predicted risk: {pred_risk}, Predicted time: {pred_time:.2f} sec, Skip: 
 log_file = "decision_log.csv"
 log_exists = os.path.exists(log_file)
 
-# Use semicolon as delimiter for Excel compatibility
-with open(log_file, mode="a", encoding="utf-8-sig", newline="") as f:
-    writer = csv.writer(f, delimiter=";")
+with open(log_file, mode="a", encoding="utf-8", newline="") as f:
+    writer = csv.writer(f)
     if not log_exists:
         writer.writerow(["timestamp", "job_name", "predicted_risk", "predicted_time", "decision"])
     writer.writerow([
-        datetime.utcnow().isoformat(),
+        datetime.now(UTC).isoformat(),
         job_name,
         pred_risk,
         round(pred_time, 2),
