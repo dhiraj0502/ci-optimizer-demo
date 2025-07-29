@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: Smart CI Optimizer
 
 on:
   push:
@@ -7,28 +7,51 @@ on:
     branches: [ main ]
 
 jobs:
+  decide:
+    name: Predict Risk and Time
+    runs-on: ubuntu-latest
+    outputs:
+      skip-heavy: ${{ steps.decision.outputs.skip }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run Smart CI Optimizer
+        id: decision
+        uses: ./smart-ci-action
+        with:
+          job: "heavy-job"
+
   lint:
+    name: Lint Code
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Lint (simulated)
-        run: echo "Linting completed."
+      - name: Simulate linting
+        run: echo "Lint passed!"
 
   unit-tests:
+    name: Run Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
       - name: Install dependencies
-        run: npm install
-      - name: Run unit tests
+        run: npm ci
+      - name: Run tests
         run: npm test
 
   heavy-job:
+    name: Heavy Integration Job
+    needs: decide
+    if: needs.decide.outputs.skip-heavy != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Simulate heavy job
+      - name: Run heavy simulation
         run: |
-          echo "Starting heavy job"
+          echo "Running heavy job..."
           sleep 10
-          echo "Heavy job complete"
+          echo "Heavy job done!"
