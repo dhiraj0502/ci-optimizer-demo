@@ -1,13 +1,16 @@
 name: "Smart CI Optimizer"
-description: "Predicts risk and time, decides to skip CI job"
+description: "Predicts risk and time, decides whether to skip a CI job"
 inputs:
   job:
     description: "The CI job name"
     required: true
     default: "unit-tests"
+
 outputs:
   skip:
-    description: "true if CI job should be skipped"
+    description: "Whether the CI job should be skipped"
+    value: ${{ steps.decision.outputs.skip }}
+
 runs:
   using: "composite"
   steps:
@@ -21,5 +24,6 @@ runs:
       shell: bash
 
     - name: Run decision engine
+      id: decision
       run: python smart-ci-action/run.py ${{ inputs.job }}
       shell: bash
