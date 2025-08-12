@@ -21,7 +21,7 @@ jobs:
         id: decision
         uses: ./smart-ci-action
         with:
-          job: "heavy-job"
+          job: "integration-tests"
       - name: Upload decision log
         uses: actions/upload-artifact@v4
         with:
