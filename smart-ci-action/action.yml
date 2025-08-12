@@ -1,5 +1,5 @@
 name: "Smart CI Optimizer"
-description: "Predicts risk and time, decides whether to skip a CI job"
+description: "Predicts CI job risk & duration from commit context and decides skip/partial/full"
 inputs:
   job:
     description: "The CI job name"
@@ -8,8 +8,17 @@ inputs:
 
 outputs:
   skip:
-    description: "Whether the CI job should be skipped"
+    description: "Whether to skip the job"
     value: ${{ steps.decision.outputs.skip }}
+  mode:
+    description: "Decision mode: skip | partial | full"
+    value: ${{ steps.decision.outputs.mode }}
+  risk_prob:
+    description: "Predicted probability of failure"
+    value: ${{ steps.decision.outputs.risk_prob }}
+  predicted_time:
+    description: "Predicted job duration (seconds)"
+    value: ${{ steps.decision.outputs.predicted_time }}
 
 runs:
   using: "composite"
@@ -19,11 +28,15 @@ runs:
       with:
         python-version: "3.10"
 
-    - name: Install dependencies
-      run: pip install scikit-learn joblib
+    - name: Install runtime deps
       shell: bash
+      run: pip install scikit-learn joblib requests
 
-    - name: Run decision engine
+    - name: Decision engine
       id: decision
-      run: python smart-ci-action/run.py ${{ inputs.job }}
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_SHA: ${{ github.sha }}
+      run: python smart-ci-action/run.py ${{ inputs.job }}
