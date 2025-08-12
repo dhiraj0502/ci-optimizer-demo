@@ -1,4 +1,4 @@
-name: Smart CI Optimizer
+name: Smart CI Optimizer (Advanced)
 
 on:
   push:
@@ -8,19 +8,20 @@ on:
 
 jobs:
   decide:
-    name: Predict Risk and Time
+    name: Predict Risk/Time & Decide
     runs-on: ubuntu-latest
     outputs:
-      skip-heavy: ${{ steps.decision.outputs.skip }}
+      skip: ${{ steps.decision.outputs.skip }}
+      mode: ${{ steps.decision.outputs.mode }}
+      risk_prob: ${{ steps.decision.outputs.risk_prob }}
+      predicted_time: ${{ steps.decision.outputs.predicted_time }}
     steps:
       - uses: actions/checkout@v3
-
-      - name: Run Smart CI Optimizer
+      - name: Smart CI
         id: decision
         uses: ./smart-ci-action
         with:
           job: "heavy-job"
-
       - name: Upload decision log
         uses: actions/upload-artifact@v4
         with:
@@ -28,36 +29,43 @@ jobs:
           path: decision_log.csv
 
   lint:
-    name: Lint Code
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Simulate linting
-        run: echo "Lint passed!"
+      - run: echo "Lint OK"
 
   unit-tests:
-    name: Run Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: "18"
-      - name: Install dependencies
-        run: npm ci
-      - name: Run tests
-        run: npm test
+      - run: npm ci
+      - run: npm test
 
-  heavy-job:
-    name: Heavy Integration Job
+  smoke-tests:
+    name: Smoke Tests (run on partial/full)
     needs: decide
-    if: needs.decide.outputs.skip-heavy != 'true'
+    if: needs.decide.outputs.mode != 'skip'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Run heavy simulation
-        run: |
-          echo "Running heavy job..."
+      - run: |
+          echo "Running smoke tests..."
+          # put minimal tests here
+          echo "✓ basic startup"
+          echo "✓ health endpoint"
+          echo "✓ 3-5 quick unit tests"
+
+  heavy-job:
+    name: Heavy Integration Job (full only)
+    needs: decide
+    if: needs.decide.outputs.mode == 'full'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          echo "Running heavy integration..."
           sleep 10
-          echo "Heavy job done!"
+          echo "Done"
